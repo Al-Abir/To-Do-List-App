@@ -1,34 +1,56 @@
-const item = document.querySelector("#item")
-const toDoBox = document.querySelector("#to-do-box")
+const item = document.querySelector('#item');
+const todolist = document.querySelector("#to-do-box");
 
-item.addEventListener(
-    "keyup",
-    function(event) {
-        if (event.key == "Enter") {
-            addToDo(this.value)
-            this.value = ""
-        }
+item.addEventListener("keyup", function(event){
+    if(event.key === "Enter"){
+        addtodo(this.value);
+        this.value = "";
     }
-)
+});
 
-const addToDo = (item) => {
-    const listItem = document.createElement("li");
-    listItem.innerHTML = `
-         ${item}
+const saveitems = () => {
+    const notes = document.querySelectorAll("#to-do-box li");
+    const data = [];
+
+    notes.forEach((note) => {
+        data.push(note.value); // Corrected to save list item text//(note.textContent.replace("×", "").trim()
+    });
+
+    
+
+    if(data.length === 0){
+        localStorage.removeItem("notes");
+    } else {
+        localStorage.setItem("notes", JSON.stringify(data)); // Corrected "Notes" to "notes"
+    }
+};
+
+const addtodo = (item) => {
+    if (!item) return; // Prevent adding empty items
+
+    const listitem = document.createElement('li');
+    listitem.innerHTML = `
+        ${item}
         <i class="fas fa-times"></i>
     `;
+    listitem.addEventListener("click", function(){
+        this.classList.toggle("done");
+    });
 
-    listItem.addEventListener(
-        "click",
-        function() {
-            this.classList.toggle("done");
-        }
-    )
-    listItem.querySelector("i").addEventListener(
-        "click",
-        function() {
-            listItem.remove()
-        }
-    )
-    toDoBox.appendChild(listItem)
-}
+    listitem.querySelector("i").addEventListener("click", () => {
+        listitem.remove();
+        saveitems(); // Ensure saving items after removing
+    });
+
+    todolist.appendChild(listitem);
+    saveitems();
+};
+
+(function(){
+    const lsTodo = JSON.parse(localStorage.getItem("notes"));
+    if(lsTodo !== null){ // Corrected null check
+        lsTodo.forEach((todoItem) => { // Corrected variable names
+            addtodo(todoItem);
+        });
+    }
+})();
